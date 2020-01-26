@@ -1,4 +1,8 @@
-playlist version: 1.8 
+![playlist](https://github.com/spikeysnack/playlist/doc/playlist.png "playlist logo")
+
+playlist 
+
+version: 1.8 
 
 status: Release 
 
