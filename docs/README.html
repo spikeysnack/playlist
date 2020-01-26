@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>README for playlist</title>
+<meta name="generator" content="vim" >
+<meta name="description" content="playlist creates m3u playlists." />
+<meta name="keywords" content="m3u playlist" />
+</head>
+
+<body>
+
+<img src="playlist.png" alt="playlist"></img>
+
+<p>playlist version: 1.8 </p>
+
+<p>status: Release </p>
+
+<p>build: 23 Jan 2020</p>
+
+<h1>Description</h1>
+
+<pre><code>Generate m3u playlists from the command line.
+
+Works for mp3, flac, m4a, and ogg files.
+</code></pre>
+
+<h1>Requires</h1>
+
+<pre><code>python 2.7 or python 3.x
+
+metaflac   (for flac)
+
+mp3info    (for mp3 )
+
+mp4ingfo   (for m4a, mp4)
+
+ogginfo    (for oga, ogg)
+</code></pre>
+
+<h2>usage:</h2>
+
+<pre><code>         playlist
+</code></pre>
+
+<p>```bash
+             playlist  [option] <dir></p>
+
+<pre><code>         -a    use &lt;current-dir&gt;.m3u as playlist name
+
+         -c    check system for info utilities
+
+         -f    &lt;file&gt;  write m3u to file instead of standard output
+
+         -h    print this help
+
+         -q    quiet no warnings or info
+
+         -r    recursively descend into directories
+
+         -R    randomize playlist
+</code></pre>
+
+<p>```</p>
+
+<h3>playlist outputs a well-formed m3u file</h3>
+
+<h3>from a list of flac, mp3, ogg, or m4a files in a directory.</h3>
+
+<h3>If no directory is given, the current dir is tried.</h3>
+
+<h3>The output is to standard output; however you may</h3>
+
+<h3>direct it to a file with the stream redirect operator (>).</h3>
+
+<h4>Example:</h4>
+
+<pre><code>                 playlist dir &gt; myplaylist.m3u    output to file
+
+                 playlist -a *.flac             output to &lt;dir&gt;.m3u
+</code></pre>
+
+<p><a href="https://github.com/spikeysnack/playlist">playlist github</a></p>
+
+<p><a href="spikeysnack@gmail.com">spikeysnakc@gmail.com</a></p>
+
+</body>
+</html>
+

@@ -62,6 +62,8 @@ from random import shuffle
 
 # globals
 # extensions we can handle
+
+
 extensions = ( "flac" , "mp3", "m4a", "ogg" )
 
 PY3 = sys.version_info > (3,) #global boolean
@@ -71,6 +73,8 @@ alb_count = 0
 
 artist_name_g = ""
 art_count = 0
+
+quiet_g= False
 
 #posix exit codes
 NOERR  = 0 # normal exit
@@ -198,11 +202,12 @@ def version(stream=sys.stdout):
 
 
 #-----------
-def usage(stream=sys.stdout):
+def usage(stream=sys.stdout, len="short"):
     """ usage message """
 
 
-    msg = \
+
+    shortmsg = \
     r"""
       usage:
              playlist
@@ -215,11 +220,17 @@ def usage(stream=sys.stdout):
              -f    <file>  write m3u to file instead of standard output
 
              -h    print this help
+    
+             -q    quiet no warnings or info 
 
              -r    recursively descend into directories
 
              -R    randomize playlist
 
+"""
+
+    longmsg = \
+            r"""
 
             playlist outputs a well-formed m3u file
             from a list of flac, mp3, ogg, or m4a files in a directory.
@@ -233,11 +244,13 @@ def usage(stream=sys.stdout):
 
             Note:  https://github.com/spikeysnack/playlist
 
-
     """
-    version(stream)
 
-    stream.write("%s\n" % msg)
+    stream.write("%s\n" % shortmsg)
+    
+    if len == "long":
+        stream.write("%s\n" % longmsg)
+        version(stream)
 
 
 
@@ -299,10 +312,12 @@ def get_flac_entry( flacfile):
             set_albumname(album)
 
         except OSError as oserr:
-            warning(( str(oserr) ))
+            if not quiet_g: 
+                warning(( str(oserr) ))
 
         except ValueError as valerr:
-            warning(( str(valerr) ))
+            if not quiet_g:
+                warning(( str(valerr) ))
 
         secs= round( total_samples / sample_rate )
 
@@ -484,10 +499,12 @@ def get_m4a_entry( m4afile):
                     secs = int(round(float(s)))
 
         except OSError as o:
-            warning(( str(o) ))
+            if not quiet_g:
+                warning(( str(o) ))
 
         except ValueError as v:
-            warning(( str(v) ))
+            if not quiet_g:
+                warning(( str(v) ))
 
         m3uline = "#EXTINF:" + str(secs)  + "," + artist + " - " + title + "\n" + m4afile
         return m3uline
@@ -589,10 +606,12 @@ def get_ogg_entry( oggfile):
                     #print( "SECS:\t[%s]\n" % secs)
 
         except OSError as o:
-            warning(( str(0) ))
+            if not quiet_g:
+                warning(( str(0) ))
 
         except ValueError as v:
-            warning(( str(v) ))
+            if not quiet_g:
+                warning(( str(v) ))
 
         output = "#EXTINF:" + str(secs)  + "," + artist + " - " + title + "\n" + oggfile
         #print("output:\t %s\n" % output )
@@ -664,7 +683,6 @@ def write_m3u( flist , outfile=None , rand=False ):
     print ("#EXTM3U\n")
 
 
-
     if rand:
         print ("# SHUFFLED LIST")
         shuffle(flist)
@@ -718,7 +736,8 @@ def program_check(programs=None):
         if  found:
             print( ("%s: found %s\n" % (p, found)) )
         else:
-            warning( ("%s %s\n" % (p, "not found in path. Install?")) )
+            if not quiet_g:
+                warning( ("%s %s\n" % (p, "not found in path. Install?")) )
 
 
 #------------------------------------------
@@ -737,6 +756,7 @@ def parse_args(args, recursive=False, outfile=None, randomlist=False):
 
     """
 
+    global quiet_g
 
     if len(args) == 0:
         return args, False
@@ -748,24 +768,27 @@ def parse_args(args, recursive=False, outfile=None, randomlist=False):
 
         if len(args) >2:
             if args[2].startswith( '-', 0, 1 ):
-                warning( "Only one option can be used.\n")
+                
+                fatal( "Only one option can be used.\n")
                 usage(sys.stdout)
                 sys.exit(22) # EINVAL
 
         if o in ( "-h", "-help", "--help", "help", "--options" , "options" ):
-            usage(sys.stdout)
+            usage(sys.stdout, "long")
             sys.exit(NOERR)
 
         elif o in ( "-v", "-ver", "--version", "version" ):
             version(sys.stdout)
             sys.exit(NOERR)
 
+        elif o in ( "-q", "-quiet", "--quiet", "quiet" ):
+            quiet_g = True
 
         elif o in ( "-a", "-auto", "--auto", "auto" ):
 
             dirname = os.path.basename( os.getcwd() )
             outfile= ''.join( ( dirname, '.m3u' ) )
-            print(( "playlist: ", outfile))
+            if not quiet_g: info((outfile))
 
         elif o  in (  "-c", "-check", "--check", "check") :
             programs = [ 'metaflac' , 'mp3info', 'ogginfo' , 'mp4info' ]
@@ -787,6 +810,10 @@ def parse_args(args, recursive=False, outfile=None, randomlist=False):
             if os.path.isfile( fpath):
                 oldfile = outfile + ".old"
                 os.rename(outfile, oldfile)
+
+        elif o in ( "-q", "-quiet", "--quiet", "quiet" ):
+            quiet_g= True
+
 
         elif o in ( "-r", "--recursive" ):
             recursive = True
@@ -960,12 +987,20 @@ def main(args):
             write_m3u( m4afiles, outfile )
 
         else:
-            warning("no audio files found")
+            if not quiet_g:
+                usage()
+                info("no audio files found   (dir?)")
             pass
 
 
+
+# program starts here
 if ( __name__ == '__main__' ) or (__name__ == '__builtin__'):
-   main(sys.argv)
+
+   main(sys.argv) # main driver
+
+   sys.exit(NOERR) # clean exit
+   
 else:
   # something is wrong if we are here
   fatal(("name: " + __name__), ENOSYS)

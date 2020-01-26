@@ -44,6 +44,8 @@ Requires
 
              -h    print this help
 
+             -q    quiet no warnings or info
+
              -r    recursively descend into directories
 
              -R    randomize playlist

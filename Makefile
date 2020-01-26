@@ -18,7 +18,7 @@ prefix= $(HOME)
 #prefix = /usr/local
 bindir = $(prefix)/bin
 mandir = $(prefix)/share/man
-manext = 7
+manext = "man7"
 docdir = $(prefix)/share/doc/playlist
 INSTALL = $(shell which install)
 INSTALL_PROGRAM = $(INSTALL)
@@ -56,28 +56,28 @@ all:	playlist.py install
 
 install:	playlist.py install-bin install-man install-doc
 	@echo "$(DESTNAME) installed to $(bindir)"
-	@echo "manpage installed to $(mandir)"
+	@echo "manpage installed to $(mandir)/$(manext)"
 	@echo "docs installed to $(docdir)"
 
 install-bin:	playlist.py
 	$(INSTALL_PROGRAM) -p  --mode=0755  playlist.py $(bindir)/
 	ln -sf $(bindir)/playlist.py $(bindir)/playlist
 
-install-man:	playlist.py doc/playlist.7
+install-man:	playlist.py docs/playlist.7
 	mkdir -p $(mandir)
-	$(INSTALL_PROGRAM) -d -g users --mode=0755 $(mandir)/man$(manext)
-	$(INSTALL_PROGRAM) --mode=0644 doc/playlist.7 $(mandir)/man$(manext)/
+	$(INSTALL_PROGRAM) -d -g users --mode=0755 $(mandir)/$(manext)
+	$(INSTALL_PROGRAM) --mode=0644 docs/playlist.7 $(mandir)/$(manext)/
 
 install-doc:	playlist.py
 	mkdir -p $(docdir)
 	$(INSTALL_PROGRAM) -d -g users --mode=0755 $(docdir)
-	cp -a doc/* $(docdir)
+	cp -a docs/* $(docdir)
 
 uninstall:
 	rm  -f $(bindir)/playlist.py
 	@echo "$(DESTNAME) removed from $(bindir)"
-	rm  -f $(mandir)/playlist.7 
-	@echo "manpage removed from $(mandir)"
+	rm  -f $(mandir)/$(manext)/playlist.7 
+	@echo "manpage removed from $(mandir)/$(manext)"
 	rm  -rf $(docdir) 
 	@echo "docs removed from $(docdir)"
 
