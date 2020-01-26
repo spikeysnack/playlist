@@ -1,5 +1,4 @@
-
-![playlist](https://github.com/spikeysnack/playlist/tree/master/doc/playlist.png "playlist logo")
+![playlist](https://github.com/spikeysnack/playlist/blob/master/doc/playlist.png)
 
 playlist 
 
