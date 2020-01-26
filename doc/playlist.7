@@ -1,0 +1,28 @@
+.\" Manpage for palylist.
+.\" Contact spikeysnack@gmail.com to correct errors or typos.
+.TH man 7 "25 Jan 2020" "1.8" "playlist man page"
+.SH NAME
+playlist \- create m3u playlist from dir of audio files
+.SH SYNOPSIS
+playlist
+.SH DESCRIPTION
+playlist outputs a well-formed m3u file from a list 
+of flac, mp3, ogg, or m4a files in a directory.
+
+If no directory is given, the current dir is tried.
+
+The output is to standard output; however you may
+direct it to a file with the stream redirect operator (>).
+.SH OPTIONS
+ -a  use <current-dir>.m3u as playlist name
+ -c  check system for info utilities
+ -f  <file>  write m3u to file instead of standard output
+ -h  print this help
+ -r  recursively descend into directories
+ -R  randomize playlist
+.SH SEE ALSO
+metaflac(1),mp3info(1),ogginfo(1)
+.SH BUGS
+Bad tags in files make things difficult.
+.SH AUTHOR
+Chris Reid (spikeysnack@gmail.com)
