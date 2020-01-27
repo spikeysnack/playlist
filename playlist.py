@@ -661,11 +661,16 @@ def write_m3u( flist , outfile=None , rand=False ):
         #print("sec", sec)
         dur = sec.split(":")
         #print("DUR:", dur)
+        
+        dur = dur[1]
 
         if (PY3):
-            dur[1]  = round ( float(dur[1]), 0 )
+            dur  = round ( float(dur), 0 )
+        else:
+            dur = int(float(dur)) 
 
-        return int(dur[1])
+
+        return dur
 
 
     out = ""
