@@ -64,7 +64,7 @@ from random import shuffle
 # extensions we can handle
 
 
-extensions = ( "flac" , "mp3", "m4a", "ogg" )
+extensions = ( "flac" , "mp3", "m4a", "ogg", "opus" )
 
 PY3 = sys.version_info > (3,) #global boolean
 
@@ -73,6 +73,9 @@ alb_count = 0
 
 artist_name_g = ""
 art_count = 0
+
+date_g = ""
+date_count_g = 0
 
 quiet_g= False
 
@@ -126,6 +129,26 @@ def set_artistname(name=""):
     else:
         pass
 
+
+def set_date(date=""):
+    """ try to set the album name """
+
+    global date_g
+
+    global date_count_g
+
+    date_count_g +=1
+
+    if not date_g:
+
+        date_g = date
+
+    elif date != date_g:
+
+        date_g = date
+
+    else:
+        pass
 
 
 
@@ -256,7 +279,8 @@ def usage(stream=sys.stdout, len="short"):
 
 #-----------------------------
 def get_flac_entry( flacfile):
-
+    
+    
     """ extract info from a flac file
 
     Args:
@@ -270,6 +294,8 @@ def get_flac_entry( flacfile):
        ValueError: data not in proper format in flac file
 
 """
+
+    
     global album_name_g
     global artist_name_g
 
@@ -280,8 +306,9 @@ def get_flac_entry( flacfile):
     art   = "--show-tag=artist"
     tit   = "--show-tag=title"
     alb   = "--show-tag=album"
+    dat   = "--show-tag=date"
 
-    mfcmd = [ mf, tit, art, alb, sr, tots, flacfile ]
+    mfcmd = [ mf, tit, art, alb, sr, tots, dat, flacfile ]
 
     if not which(mf):
         fatal(" I can't find metaflac in path. Install?]\n", ENOENT)
@@ -298,19 +325,28 @@ def get_flac_entry( flacfile):
             databytes, err = p.communicate()
 
             data = databytes.decode('utf-8')
-
             info = data.split('\n')
-            # print(info)
 
             title  = info[0].split('=')[1]
             artist = info[1].split('=')[1]
             album  = info[2].split('=')[1]
+
             sample_rate  =  int(info[3])
             total_samples = int(info[4])
 
+            date  = info[5].split('=')[1]
+
             set_artistname(artist)
             set_albumname(album)
+            set_date(date)
+            
+            secs = round( total_samples / sample_rate )
 
+            output = "#EXTINF:" + str(secs) + "," + artist + " - " + title + "\n" + flacfile
+        # print ("output\t[%s]\n" % output )
+
+            return output
+        
         except OSError as oserr:
             if not quiet_g: 
                 warning(( str(oserr) ))
@@ -319,12 +355,7 @@ def get_flac_entry( flacfile):
             if not quiet_g:
                 warning(( str(valerr) ))
 
-        secs= round( total_samples / sample_rate )
 
-        output = "#EXTINF:" + str(secs) + "," + artist + " - " + title + "\n" + flacfile
-        # print ("output\t[%s]\n" % output )
-
-        return output
 
 
 #---------------------------
@@ -626,7 +657,7 @@ def hms(sec):
 
     dhour = int(sec / 3600)
     dmin = int( (sec/60) - dhour*60 )
-    dsec = sec - ( dhour*3600 + dmin*60)
+    dsec = int( sec - ( dhour*3600 + dmin*60) )
     # print ("dhour", dhour)
     # print ("dmin", dmin)
     # print ("dsec", dsec)
@@ -668,11 +699,11 @@ def write_m3u( flist , outfile=None , rand=False ):
             dur  = round ( float(dur), 0 )
         else:
             dur = int(float(dur)) 
-
-
+            
+        
         return dur
 
-
+    
     out = ""
 
     # redirect stdout to file.
@@ -687,10 +718,10 @@ def write_m3u( flist , outfile=None , rand=False ):
 
     print ("#EXTM3U\n")
 
-
     if rand:
         print ("# SHUFFLED LIST")
         shuffle(flist)
+
 
     for entry in flist:
 
@@ -721,6 +752,8 @@ def write_m3u( flist , outfile=None , rand=False ):
     print(("# Album: " + album_name_g)   )
 
     print(( "# Duration: " + hms(duration) ))
+
+    print(( "# Date: " + date_g ))
 
     print ("# playlist.py copyright 2015-2020 by chris reid")
 

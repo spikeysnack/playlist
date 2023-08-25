@@ -83,7 +83,7 @@ uninstall:
 
 update:
 	@{ GF=$(shell git fetch origin 2>&1); \
-	   if [[ "$${GF}" ]]  ; then git merge origin ; \
+	   if [ -z "$${GF}" ]  ; then git merge origin ; \
 	   else     echo "playlist is already up to date." ; fi }
 
 readme:	README.md
