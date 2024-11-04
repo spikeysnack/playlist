@@ -247,6 +247,8 @@ def usage(stream=sys.stdout, len="short"):
              -q    quiet no warnings or info 
 
              -r    recursively descend into directories
+            
+             -s    sort playlist numerically
 
              -R    randomize playlist
 
@@ -391,6 +393,8 @@ def get_mp3_entry( mp3file):
     # art   = "%a"
     # tit   = "%t"
     # alb   = "%l"
+    # dat   = "%y"
+    
     mp    = "mp3info"
 
     if not which(mp):
@@ -399,7 +403,7 @@ def get_mp3_entry( mp3file):
 
     mp3exists = os.path.exists ( mp3file )
 
-    options = "%a\n%t\n%l\n%S\n"
+    options = "%a\n%t\n%l\n%y\n%S\n"
 
     output = None
 
@@ -417,7 +421,8 @@ def get_mp3_entry( mp3file):
             artist =  info[0]
             title  =  info[1]
             album  =  info[2]
-            secs   =  info[3]
+            year   =  info[3]
+            secs   =  info[4]
 
             output = "#EXTINF:" + str(secs)  + "," + artist + " - " + title + "\n" + mp3file
 
@@ -426,6 +431,8 @@ def get_mp3_entry( mp3file):
             set_albumname(album)
 
             set_artistname(artist)
+
+            set_date(year)
 
         except OSError as o:
             print(( str(0) ))
@@ -477,6 +484,7 @@ def get_m4a_entry( m4afile):
     artist = ""
     title  = ""
     album = ""
+    date = ""
     secs   = 0
 
 
@@ -671,7 +679,7 @@ def hms(sec):
 
 #----------------------
 
-def write_m3u( flist , outfile=None , rand=False ):
+def write_m3u( flist , outfile=None , sort=False, rand=False ):
 
     """ write out the M3U-EX info  from the mp3 files
 
@@ -718,6 +726,10 @@ def write_m3u( flist , outfile=None , rand=False ):
 
     print ("#EXTM3U\n")
 
+    if sort:
+        #  sys.stderr.write("[sorting flist in write_m3u")
+        flist.sort()
+    
     if rand:
         print ("# SHUFFLED LIST")
         shuffle(flist)
@@ -796,6 +808,8 @@ def parse_args(args, recursive=False, outfile=None, randomlist=False):
 
     global quiet_g
 
+    sort_list = False
+    
     if len(args) == 0:
         return args, False
 
@@ -852,6 +866,8 @@ def parse_args(args, recursive=False, outfile=None, randomlist=False):
         elif o in ( "-q", "-quiet", "--quiet", "quiet" ):
             quiet_g= True
 
+        elif o in ( "-s", "--sort" ):
+            sort_list = True
 
         elif o in ( "-r", "--recursive" ):
             recursive = True
@@ -875,7 +891,7 @@ def parse_args(args, recursive=False, outfile=None, randomlist=False):
         args.remove(o)
 
 
-    return (args, recursive, outfile, randomlist)
+    return (args, recursive, outfile, sort_list, randomlist)
 
 #------------------------------------------------------------
 
@@ -951,12 +967,15 @@ def main(args):
     file_list     = []
     recursive     = False
     randomlist    = False
+    sortlist      = False
     outfile       = None
 
     d             = "."
 
-    args, recursive, outfile, randomlist = parse_args(args, recursive)
 
+    args, recursive, outfile, sortlist, randomlist = parse_args(args, recursive)
+    
+    
     n_args = len(args)
 
 
@@ -980,11 +999,12 @@ def main(args):
                     file_list.append(f)
 
     if file_list:
-        write_m3u(file_list, outfile, randomlist)
+        write_m3u(file_list, outfile, sortlist, randomlist)
     else:
         # ok options analyzed, lets make some file lists.
 
         d = os.getcwd() # no file list use current dir
+
         if not d.endswith('/'): d = d+ "/"
 
         flacfiles = glob.glob(d + "*.flac")
@@ -992,7 +1012,13 @@ def main(args):
         oggfiles  = glob.glob(d + "*.ogg" )
         m4afiles  = glob.glob(d + "*.m4a" )
 
-        mp3files = sorted ( mp3files )
+
+        if sortlist:            
+            flacfiles.sort()
+            mp3files.sort()
+            oggfiles.sort()
+            m4afiles.sort()
+        
 
         if randomlist:
             shuffle(flacfiles)
@@ -1007,7 +1033,10 @@ def main(args):
 #        print( "allfiles %s\n" % allfiles)
 
         if allfiles:
-            if randomlist:
+
+            if sortlist:
+                allfiles.sort()
+            elif randomlist:
                 shuffle(allfiles)
 
             write_m3u( allfiles, outfile )
