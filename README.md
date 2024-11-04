@@ -46,6 +46,8 @@ Requires
 
              -q    quiet no warnings or info
 
+             -s    sort playlist numerically
+  
              -r    recursively descend into directories
 
              -R    randomize playlist
